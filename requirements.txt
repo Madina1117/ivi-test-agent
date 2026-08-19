@@ -1,0 +1,9 @@
+pytest>=8.0
+pytest-html>=4.1
+pytest-xdist>=3.5
+pytest-rerunfailures>=14.0
+PyYAML>=6.0
+
+# Only required for --real-device runs against an actual head unit/emulator.
+Appium-Python-Client>=4.0
+selenium>=4.20
