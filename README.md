@@ -12,6 +12,20 @@ The suite runs two ways against the exact same test code and page objects:
 - **Mock mode (default)** — drives an in-memory *virtual head unit*, so `pytest` runs green with zero Android SDK, emulator, or Appium server. This is what CI runs on every push.
 - **`--real-device` mode** — drives a real head unit or Android emulator over **Appium + UiAutomator2**, with `adb` used for boot timing, memory, and logcat.
 
+## Demo
+
+A visual mock of the head unit, driven end-to-end by the actual `MockUIDriver` / page-object stack (not hand-animated — every screen change below is a real framework state transition, screenshotted after the fact):
+
+![HMI walkthrough — Bluetooth pairing, media, navigation, voice, climate, WiFi, OTA](docs/hmi-demo.gif)
+
+The same test code running from the terminal:
+
+![pytest run — full suite, then filtered by smoke/regression markers](docs/pytest-demo.gif)
+
+...and the HTML report it produces:
+
+![pytest-html report — 38 passed](docs/pytest-html-report.png)
+
 ## What It Tests
 
 | Suite | Features |

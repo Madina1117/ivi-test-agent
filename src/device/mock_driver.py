@@ -36,6 +36,7 @@ class VirtualHeadUnitState:
 
     gps_locked: bool = False
     route_active: bool = False
+    nav_destination: str | None = None
     voice_guidance_on: bool = True
 
     projection_active: bool = False
@@ -87,6 +88,7 @@ class MockUIDriver(UIDriverBase):
         if self._is_locked(locator):
             raise PermissionError(f"'{locator.element_id}' is locked while the vehicle is in motion")
         if locator.element_id == "nav_destination_input":
+            self.state.nav_destination = text
             self.state.route_active = bool(text)
             self._log(f"NAV: destination set to '{text}'")
 

@@ -1,0 +1,280 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>IVI Head Unit — visual mock</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1000px; height: 640px;
+    background: #0b0d12;
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    overflow: hidden;
+  }
+  .bezel {
+    width: 1000px; height: 640px;
+    background: linear-gradient(180deg, #14161d 0%, #0e1015 100%);
+    border-radius: 22px;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .statusbar {
+    height: 42px; padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    color: #8b93a7; font-size: 13px; letter-spacing: 0.3px;
+  }
+  .statusbar .right { display: flex; gap: 14px; align-items: center; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .dot.on { background: #4ade80; }
+  .dot.off { background: #3a3f4d; }
+  .content {
+    flex: 1; padding: 10px 34px 0 34px;
+    color: #e8ebf2;
+    position: relative;
+  }
+  .step-label {
+    position: absolute; top: 4px; left: 34px; right: 34px;
+    font-size: 12px; color: #6b7280; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .screen-title { font-size: 22px; font-weight: 600; margin: 26px 0 22px 0; color: #f3f5f9; }
+  .card {
+    background: #191c24; border: 1px solid #262a35; border-radius: 16px;
+    padding: 22px 26px; margin-bottom: 14px;
+  }
+  .row { display: flex; align-items: center; justify-content: space-between; }
+  .big { font-size: 46px; font-weight: 700; }
+  .label { color: #8b93a7; font-size: 13px; margin-bottom: 6px; }
+  .value { font-size: 18px; font-weight: 600; color: #f3f5f9; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #10231a; color: #4ade80; border: 1px solid #1d3a29;
+    padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  }
+  .badge.idle { background: #1c1f28; color: #6b7280; border-color: #262a35; }
+  .badge.warn { background: #2a1c10; color: #fb923c; border-color: #40270f; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .icon-circle {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: #1f2330; display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+  }
+  .bar-track { background: #262a35; height: 8px; border-radius: 4px; width: 100%; overflow: hidden; margin-top: 8px; }
+  .bar-fill { background: #60a5fa; height: 100%; border-radius: 4px; }
+  .pulse { animation: pulse 1.4s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+  .dock {
+    height: 76px; margin: 14px 24px 20px 24px;
+    background: #14161d; border: 1px solid #23262f; border-radius: 18px;
+    display: flex; align-items: center; justify-content: space-around;
+  }
+  .dock-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #6b7280; font-size: 10px; }
+  .dock-item.active { color: #60a5fa; }
+  .dock-icon { font-size: 20px; }
+  .home-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 10px; }
+  .home-tile { background: #191c24; border: 1px solid #262a35; border-radius: 16px; padding: 20px; text-align: center; }
+  .home-tile .icon-circle { margin: 0 auto 10px auto; }
+  .home-tile .name { font-size: 13px; color: #c6cad4; }
+</style>
+</head>
+<body>
+  <div class="bezel">
+    <div class="statusbar">
+      <div id="clock">14:32</div>
+      <div class="right">
+        <span id="wifi-dot"></span> WiFi
+        <span id="bt-dot"></span> BT
+        <span id="cell-dot"></span> Cellular
+        <span id="mode-icon">☀️</span>
+      </div>
+    </div>
+    <div class="content">
+      <div class="step-label" id="step-label"></div>
+      <div id="screen-root"></div>
+    </div>
+    <div class="dock" id="dock"></div>
+  </div>
+
+<script>
+const STATE = __STATE_JSON__;
+
+const SCREENS = ["home","bluetooth","media","navigation","android_auto","voice","climate","connectivity","diagnostics"];
+const ICONS = {
+  home: "🏠", bluetooth: "🔵", media: "🎵", navigation: "🧭",
+  android_auto: "📱", voice: "🎙️", climate: "❄️", connectivity: "📶", diagnostics: "🛠️",
+};
+const NAMES = {
+  home: "Home", bluetooth: "Bluetooth", media: "Media", navigation: "Navigation",
+  android_auto: "Projection", voice: "Voice", climate: "Climate", connectivity: "Connectivity", diagnostics: "Diagnostics",
+};
+
+function dot(on) { return on ? '<span class="dot on"></span>' : '<span class="dot off"></span>'; }
+
+function renderDock() {
+  const dock = document.getElementById("dock");
+  dock.innerHTML = SCREENS.map(s => `
+    <div class="dock-item ${s === STATE.screen ? 'active' : ''}">
+      <div class="dock-icon">${ICONS[s]}</div>
+      <div>${NAMES[s]}</div>
+    </div>
+  `).join("");
+}
+
+function renderStatusbar() {
+  document.getElementById("wifi-dot").outerHTML = dot(STATE.wifi_connected);
+  document.getElementById("bt-dot").outerHTML = dot(!!STATE.bt_connected_device);
+  document.getElementById("cell-dot").outerHTML = dot(STATE.cellular_active);
+  document.getElementById("mode-icon").textContent = STATE.day_night_mode === "night" ? "🌙" : "☀️";
+}
+
+function renderHome() {
+  return `
+    <div class="screen-title">Home</div>
+    <div class="home-grid">
+      ${SCREENS.filter(s => s !== "home").map(s => `
+        <div class="home-tile">
+          <div class="icon-circle">${ICONS[s]}</div>
+          <div class="name">${NAMES[s]}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderBluetooth() {
+  const connected = STATE.bt_connected_device;
+  return `
+    <div class="screen-title">Bluetooth</div>
+    <div class="card row">
+      <div>
+        <div class="label">Status</div>
+        <div class="value">${connected ? "Connected — " + connected : "Not connected"}</div>
+      </div>
+      <div class="icon-circle">🔵</div>
+    </div>
+    <div class="card row">
+      <div class="label">Active call</div>
+      <span class="badge ${STATE.bt_call_active ? '' : 'idle'}">${STATE.bt_call_active ? "● In call" : "Idle"}</span>
+    </div>
+  `;
+}
+
+function renderMedia() {
+  return `
+    <div class="screen-title">Media</div>
+    <div class="card">
+      <div class="row">
+        <div>
+          <div class="label">Now playing (${STATE.media_source})</div>
+          <div class="value">${STATE.media_track}</div>
+        </div>
+        <div class="icon-circle">${STATE.media_playing ? "⏸️" : "▶️"}</div>
+      </div>
+      <div class="label" style="margin-top:18px">Volume — ${STATE.media_volume}/20</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(STATE.media_volume/20)*100}%"></div></div>
+    </div>
+  `;
+}
+
+function renderNavigation() {
+  return `
+    <div class="screen-title">Navigation</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="label">GPS</div>
+        <span class="badge ${STATE.gps_locked ? '' : 'idle'}">${STATE.gps_locked ? "● Locked" : "Searching"}</span>
+      </div>
+      <div class="card">
+        <div class="label">Route</div>
+        <span class="badge ${STATE.route_active ? '' : 'idle'}">${STATE.route_active ? "● Active" : "No route"}</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">Destination</div>
+      <div class="value">${STATE.nav_destination || "—"}</div>
+    </div>
+  `;
+}
+
+function renderAndroidAuto() {
+  return `
+    <div class="screen-title">Phone Projection</div>
+    <div class="card row">
+      <div class="value">${STATE.projection_active ? "Projection active" : "Not connected"}</div>
+      <div class="icon-circle">📱</div>
+    </div>
+  `;
+}
+
+function renderVoice() {
+  return `
+    <div class="screen-title">Voice Assistant</div>
+    <div class="card" style="text-align:center; padding: 34px;">
+      <div class="icon-circle ${STATE.voice_listening ? 'pulse' : ''}" style="margin:0 auto 16px auto; width:84px; height:84px; font-size:36px;">🎙️</div>
+      <span class="badge ${STATE.voice_listening ? '' : 'idle'}">${STATE.voice_listening ? "● Listening" : "Idle"}</span>
+      <div class="label" style="margin-top:18px">Last command</div>
+      <div class="value">${STATE.voice_last_command || "—"}</div>
+    </div>
+  `;
+}
+
+function renderClimate() {
+  return `
+    <div class="screen-title">Climate</div>
+    <div class="card row">
+      <div>
+        <div class="label">Cabin temperature</div>
+        <div class="big">${STATE.climate_temp_c}°C</div>
+      </div>
+      <div class="icon-circle">${STATE.day_night_mode === "night" ? "🌙" : "☀️"}</div>
+    </div>
+  `;
+}
+
+function renderConnectivity() {
+  return `
+    <div class="grid2" style="margin-top:26px">
+      <div class="card">
+        <div class="label">WiFi</div>
+        <span class="badge ${STATE.wifi_connected ? '' : 'idle'}">${STATE.wifi_connected ? "● Connected" : "Off"}</span>
+      </div>
+      <div class="card">
+        <div class="label">Hotspot</div>
+        <span class="badge ${STATE.hotspot_enabled ? '' : 'idle'}">${STATE.hotspot_enabled ? "● Enabled" : "Off"}</span>
+      </div>
+      <div class="card">
+        <div class="label">Cellular</div>
+        <span class="badge ${STATE.cellular_active ? '' : 'idle'}">${STATE.cellular_active ? "● Active" : "Standby"}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderDiagnostics() {
+  const status = STATE.ota_status;
+  const pct = { idle: 0, downloading: 55, failed: 40, rolled_back: 100 }[status] ?? 0;
+  const cls = status === "failed" ? "warn" : (status === "idle" ? "idle" : "");
+  return `
+    <div class="screen-title">Diagnostics &amp; OTA</div>
+    <div class="card">
+      <div class="row">
+        <div class="label">Update status</div>
+        <span class="badge ${cls}">${status}</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+    </div>
+  `;
+}
+
+const RENDERERS = {
+  home: renderHome, bluetooth: renderBluetooth, media: renderMedia,
+  navigation: renderNavigation, android_auto: renderAndroidAuto, voice: renderVoice,
+  climate: renderClimate, connectivity: renderConnectivity, diagnostics: renderDiagnostics,
+};
+
+document.getElementById("screen-root").innerHTML = RENDERERS[STATE.screen]();
+document.getElementById("step-label").textContent = STATE.step_label || "";
+renderDock();
+renderStatusbar();
+</script>
+</body>
+</html>
