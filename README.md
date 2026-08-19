@@ -28,7 +28,7 @@ The suite runs two ways against the exact same test code and page objects:
 ## Quick Start
 
 ```bash
-git clone https://github.com/<your-username>/ivi-test-agent.git
+git clone https://github.com/Madina1117/ivi-test-agent.git
 cd ivi-test-agent
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
