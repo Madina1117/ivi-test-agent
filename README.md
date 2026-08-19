@@ -1,5 +1,8 @@
 # ivi-test-agent
 
+[![tests](https://github.com/Madina1117/ivi-test-agent/actions/workflows/test.yml/badge.svg)](https://github.com/Madina1117/ivi-test-agent/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 🚘 **Android Automotive / In-Vehicle Infotainment (IVI) test automation suite**
 
 pytest + Appium test automation for the head unit software in a connected vehicle — Bluetooth, media, navigation, phone projection, voice assistant, climate/HMI, connectivity, and diagnostics/OTA.
